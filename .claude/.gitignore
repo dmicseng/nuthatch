@@ -1,0 +1,6 @@
+# Local-only settings (per-developer overrides)
+settings.local.json
+
+# Session data
+sessions/
+logs/
