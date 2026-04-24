@@ -19,7 +19,7 @@ Be kind. We follow the [Contributor Covenant](https://www.contributor-covenant.o
 Prerequisites: Node.js 20+, Docker, Docker Compose.
 
 ```bash
-git clone https://github.com/your-username/nuthatch.git
+git clone https://github.com/dmicseng/nuthatch.git
 cd nuthatch
 npm install
 cp .env.example .env.local

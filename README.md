@@ -6,9 +6,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/your-username/nuthatch/actions"><img src="https://img.shields.io/badge/build-pending-lightgrey" alt="Build status"></a>
-  <a href="https://github.com/your-username/nuthatch/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License"></a>
-  <a href="https://github.com/your-username/nuthatch/stargazers"><img src="https://img.shields.io/github/stars/your-username/nuthatch?style=flat" alt="Stars"></a>
+  <a href="https://github.com/dmicseng/nuthatch/actions"><img src="https://img.shields.io/badge/build-pending-lightgrey" alt="Build status"></a>
+  <a href="https://github.com/dmicseng/nuthatch/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License"></a>
+  <a href="https://github.com/dmicseng/nuthatch/stargazers"><img src="https://img.shields.io/github/stars/dmicseng/nuthatch?style=flat" alt="Stars"></a>
 </p>
 
 ---
@@ -43,7 +43,7 @@ Your bills tell a story about your business — which vendors you rely on, which
 ### Docker Compose (recommended)
 
 ```bash
-git clone https://github.com/your-username/nuthatch.git
+git clone https://github.com/dmicseng/nuthatch.git
 cd nuthatch
 cp .env.example .env
 # edit .env to set NUTHATCH_SECRET_KEY and admin credentials
@@ -113,8 +113,8 @@ See [SECURITY.md](SECURITY.md) for our security policy.
 ## Links
 
 - **Docs** — https://docs.nuthatch.io
-- **Roadmap** — [projects/roadmap](https://github.com/your-username/nuthatch/projects)
-- **Discussions** — [GitHub Discussions](https://github.com/your-username/nuthatch/discussions)
+- **Roadmap** — [projects/roadmap](https://github.com/dmicseng/nuthatch/projects)
+- **Discussions** — [GitHub Discussions](https://github.com/dmicseng/nuthatch/discussions)
 - **Changelog** — [CHANGELOG.md](CHANGELOG.md)
 
 ---

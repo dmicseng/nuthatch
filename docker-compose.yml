@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/your-username/nuthatch:latest
+    image: ghcr.io/dmicseng/nuthatch:latest
     restart: unless-stopped
     depends_on:
       postgres:
@@ -24,7 +24,7 @@ services:
       retries: 3
 
   worker:
-    image: ghcr.io/your-username/nuthatch:latest
+    image: ghcr.io/dmicseng/nuthatch:latest
     restart: unless-stopped
     command: ["node", "dist/worker.js"]
     depends_on:
