@@ -1,0 +1,41 @@
+                    GNU AFFERO GENERAL PUBLIC LICENSE
+                       Version 3, 19 November 2007
+
+ Copyright (C) 2026 Nuthatch contributors
+
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+                            Preamble
+
+  The GNU Affero General Public License is a free, copyleft license for
+software and other kinds of works, specifically designed to ensure
+cooperation with the community in the case of network server software.
+
+  ---
+
+  NOTE TO REPO OWNER: Replace this file with the full AGPL v3 license text
+  from https://www.gnu.org/licenses/agpl-3.0.txt
+
+  The full text is ~17,000 characters. Copy it verbatim into this file.
+  Do not modify the license text itself.
+
+  Add your copyright line at the top:
+
+      Copyright (C) 2026 Your Name <your.email@example.com>
+
+  The rest of the AGPL text must stay exactly as the FSF publishes it
+  for this to be a valid AGPL v3 license.
+
+  ---
+
+  Why AGPL v3 for Nuthatch:
+
+  - Protects the project from being taken closed-source by a larger
+    player (e.g. a cloud provider hosting a modified fork as a service
+    without sharing their changes).
+  - Encourages contributions back to the community.
+  - Compatible with Wallos, Plausible, Grafana, Mattermost, Nextcloud,
+    and other self-hosted tools in adjacent categories.
+  - Allows us to offer a separate commercial license for organizations
+    that can't comply with AGPL (see README for commercial license info).

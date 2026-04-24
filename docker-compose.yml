@@ -1,0 +1,65 @@
+services:
+  app:
+    image: ghcr.io/your-username/nuthatch:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "${NUTHATCH_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgres://nuthatch:${POSTGRES_PASSWORD}@postgres:5432/nuthatch
+      REDIS_URL: redis://redis:6379
+      NUTHATCH_SECRET_KEY: ${NUTHATCH_SECRET_KEY}
+      NUTHATCH_PUBLIC_URL: ${NUTHATCH_PUBLIC_URL:-http://localhost:3000}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    image: ghcr.io/your-username/nuthatch:latest
+    restart: unless-stopped
+    command: ["node", "dist/worker.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgres://nuthatch:${POSTGRES_PASSWORD}@postgres:5432/nuthatch
+      REDIS_URL: redis://redis:6379
+      NUTHATCH_SECRET_KEY: ${NUTHATCH_SECRET_KEY}
+      NODE_ENV: production
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nuthatch
+      POSTGRES_USER: nuthatch
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nuthatch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:

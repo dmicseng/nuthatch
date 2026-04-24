@@ -1,0 +1,68 @@
+name: Bug report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. The more detail you provide, the faster we can fix it.
+
+        **If this is a security issue, please email security@nuthatch.io instead.**
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Nuthatch version
+      description: Find this in Settings → About, or run `docker inspect ghcr.io/your-username/nuthatch:latest`
+      placeholder: e.g. 0.4.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment method
+      options:
+        - Docker Compose (recommended)
+        - Kubernetes (Helm chart)
+        - Bare metal
+        - Managed cloud (nuthatch.io)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, any relevant context
+      placeholder: |
+        - OS: Ubuntu 22.04
+        - Browser: Chrome 120
+        - Reverse proxy: nginx
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Paste relevant log output (sanitize any secrets). Use triple-backticks for formatting.
+      render: shell
