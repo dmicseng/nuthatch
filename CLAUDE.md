@@ -3,7 +3,7 @@
 Self-hosted cost tracker for teams. One dashboard for SaaS, cloud, AI spend.
 
 ## Stack
-- Next.js 15 (App Router) + TypeScript strict mode
+- Next.js 16 (App Router) + TypeScript strict mode
 - Prisma + PostgreSQL
 - Redis + BullMQ for background jobs  
 - shadcn/ui + Tailwind CSS

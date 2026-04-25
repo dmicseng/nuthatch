@@ -13,7 +13,7 @@ See `README.md` for full positioning.
 ## Stack
 
 - **Runtime**: Node.js 20+, TypeScript 5.x (strict mode — no `any`, no `@ts-ignore` without comment)
-- **Framework**: Next.js 15 (App Router), React 19, Server Components by default
+- **Framework**: Next.js 16 (App Router), React 19, Server Components by default
 - **Styling**: Tailwind CSS + shadcn/ui (brand palette below)
 - **DB**: PostgreSQL 16 + Prisma ORM
 - **Queue**: Redis 7 + BullMQ

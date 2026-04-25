@@ -1,0 +1,34 @@
+# Local development services for Nuthatch.
+# Run: docker compose -f docker-compose.dev.yml up -d
+# The Next.js app runs on the host (npm run dev), not in this compose file.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nuthatch
+      POSTGRES_USER: nuthatch
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - nuthatch_dev_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nuthatch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - nuthatch_dev_redis:/data
+
+volumes:
+  nuthatch_dev_postgres:
+  nuthatch_dev_redis:
