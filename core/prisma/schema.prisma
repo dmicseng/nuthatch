@@ -75,6 +75,7 @@ model Organization {
   services    Service[]
   budgets     Budget[]
   auditLog    AuditLogEntry[]
+  usedInvites UsedInvite[]
 
   @@map("organizations")
 }
@@ -88,9 +89,10 @@ model User {
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  memberships    Membership[]
-  ownedServices  Service[]       @relation("ServiceOwner")
-  auditLogEvents AuditLogEntry[]
+  memberships     Membership[]
+  ownedServices   Service[]       @relation("ServiceOwner")
+  auditLogEvents  AuditLogEntry[]
+  acceptedInvites UsedInvite[]
 
   @@map("users")
 }
@@ -222,6 +224,23 @@ model Budget {
 
   @@index([orgId])
   @@map("budgets")
+}
+
+/// One-time-use tracking for invite tokens.
+/// A row here means the invite jti has been consumed and must not be accepted again.
+model UsedInvite {
+  jtiHash    String   @id @map("jti_hash")
+  orgId      String   @map("org_id")
+  email      String
+  acceptedBy String   @map("accepted_by_user_id")
+  acceptedAt DateTime @default(now()) @map("accepted_at")
+
+  organization   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  acceptedByUser User         @relation(fields: [acceptedBy], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([acceptedBy])
+  @@map("used_invites")
 }
 
 /// Append-only audit trail for mutations.
