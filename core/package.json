@@ -47,5 +47,8 @@
     "vite-tsconfig-paths": "^5.1.4",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
