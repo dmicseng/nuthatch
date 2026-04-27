@@ -9,3 +9,237 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum Plan {
+  free
+  team
+  cloud
+}
+
+enum Role {
+  owner
+  admin
+  member
+  viewer
+}
+
+enum VendorCategory {
+  cloud
+  ai
+  design
+  comms
+  dev
+  finance
+  other
+}
+
+enum ServiceType {
+  subscription
+  usage
+}
+
+enum BillingCycle {
+  monthly
+  quarterly
+  yearly
+}
+
+enum BillingSource {
+  manual
+  email
+  api
+}
+
+enum CredentialKind {
+  api_key
+  oauth_token
+  cookie
+}
+
+// =============================================================================
+// Tenancy
+// =============================================================================
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  plan      Plan     @default(free)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  memberships Membership[]
+  services    Service[]
+  budgets     Budget[]
+  auditLog    AuditLogEntry[]
+
+  @@map("organizations")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  name            String?
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  memberships    Membership[]
+  ownedServices  Service[]       @relation("ServiceOwner")
+  auditLogEvents AuditLogEntry[]
+
+  @@map("users")
+}
+
+model Membership {
+  orgId     String   @map("org_id")
+  userId    String   @map("user_id")
+  role      Role
+  createdAt DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([orgId, userId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+// =============================================================================
+// Domain
+// =============================================================================
+
+model Vendor {
+  id        String         @id @default(cuid())
+  slug      String         @unique
+  name      String
+  category  VendorCategory
+  website   String?
+  logoUrl   String?        @map("logo_url")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  services Service[]
+
+  @@map("vendors")
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  orgId        String        @map("org_id")
+  vendorId     String?       @map("vendor_id")
+  displayName  String        @map("display_name")
+  type         ServiceType
+  billingCycle BillingCycle? @map("billing_cycle")
+  fixedCost    Decimal?      @map("fixed_cost") @db.Decimal(14, 4)
+  currency     String        @db.Char(3)
+  nextRenewal  DateTime?     @map("next_renewal") @db.Date
+  isActive     Boolean       @default(true) @map("is_active")
+  ownerUserId  String?       @map("owner_user_id")
+  notes        String?
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  organization   Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  vendor         Vendor?         @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  owner          User?           @relation("ServiceOwner", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  billingEvents  BillingEvent[]
+  usageSnapshots UsageSnapshot[]
+  credential     Credential?
+
+  @@index([orgId, isActive])
+  @@index([orgId, nextRenewal])
+  @@index([vendorId])
+  @@index([ownerUserId])
+  @@map("services")
+}
+
+model BillingEvent {
+  id          String        @id @default(cuid())
+  serviceId   String        @map("service_id")
+  chargedOn   DateTime      @map("charged_on") @db.Date
+  amount      Decimal       @db.Decimal(14, 4)
+  currency    String        @db.Char(3)
+  source      BillingSource
+  externalRef String?       @map("external_ref")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId, chargedOn(sort: Desc)])
+  @@index([serviceId, createdAt(sort: Desc)])
+  @@map("billing_events")
+}
+
+model UsageSnapshot {
+  id            String   @id @default(cuid())
+  serviceId     String   @map("service_id")
+  snapshotDate  DateTime @map("snapshot_date") @db.Date
+  metric        String
+  value         Decimal  @db.Decimal(14, 4)
+  estimatedCost Decimal? @map("estimated_cost") @db.Decimal(14, 4)
+  currency      String   @db.Char(3)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId, snapshotDate(sort: Desc)])
+  @@map("usage_snapshots")
+}
+
+model Credential {
+  id            String         @id @default(cuid())
+  serviceId     String         @unique @map("service_id")
+  kind          CredentialKind
+  encryptedData Bytes          @map("encrypted_data")
+  keyId         String         @map("key_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  rotatedAt     DateTime?      @map("rotated_at")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@map("credentials")
+}
+
+// =============================================================================
+// Security & Governance
+// =============================================================================
+
+model Budget {
+  id                String          @id @default(cuid())
+  orgId             String          @map("org_id")
+  category          VendorCategory?
+  monthlyLimit      Decimal         @map("monthly_limit") @db.Decimal(14, 4)
+  currency          String          @db.Char(3)
+  alertThresholdPct Int             @default(80) @map("alert_threshold_pct")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@map("budgets")
+}
+
+/// Append-only audit trail for mutations.
+/// App code MUST NOT update or delete rows.
+model AuditLogEntry {
+  id           String   @id @default(cuid())
+  orgId        String   @map("org_id")
+  userId       String?  @map("user_id")
+  action       String
+  resourceType String   @map("resource_type")
+  resourceId   String   @map("resource_id")
+  details      Json
+  occurredAt   DateTime @default(now()) @map("occurred_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([orgId, occurredAt(sort: Desc)])
+  @@index([orgId, resourceType, resourceId])
+  @@map("audit_log")
+}
