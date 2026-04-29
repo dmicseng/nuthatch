@@ -13,6 +13,7 @@ const TABLES_TO_TRUNCATE = [
   'memberships',
   'users',
   'organizations',
+  'vendors',
 ];
 
 export async function resetDb() {
