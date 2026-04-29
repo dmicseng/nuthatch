@@ -65,11 +65,15 @@ enum CredentialKind {
 // =============================================================================
 
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  plan      Plan     @default(free)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  name         String
+  plan         Plan     @default(free)
+  /// Per-tenant DEK, encrypted with KEK. Generated atomically when the org is
+  /// created (createOrgWithOwner). NOT NULL — pre-existing rows must be
+  /// backfilled via `npm run db:backfill-deks` before applying this migration.
+  dekEncrypted Bytes    @map("dek_encrypted")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   memberships Membership[]
   services    Service[]
@@ -130,20 +134,22 @@ model Vendor {
 }
 
 model Service {
-  id           String        @id @default(cuid())
-  orgId        String        @map("org_id")
-  vendorId     String?       @map("vendor_id")
-  displayName  String        @map("display_name")
-  type         ServiceType
-  billingCycle BillingCycle? @map("billing_cycle")
-  fixedCost    Decimal?      @map("fixed_cost") @db.Decimal(14, 4)
-  currency     String        @db.Char(3)
-  nextRenewal  DateTime?     @map("next_renewal") @db.Date
-  isActive     Boolean       @default(true) @map("is_active")
-  ownerUserId  String?       @map("owner_user_id")
-  notes        String?
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
+  id            String        @id @default(cuid())
+  orgId         String        @map("org_id")
+  vendorId      String?       @map("vendor_id")
+  displayName   String        @map("display_name")
+  type          ServiceType
+  billingCycle  BillingCycle? @map("billing_cycle")
+  fixedCost     Decimal?      @map("fixed_cost") @db.Decimal(14, 4)
+  currency      String        @db.Char(3)
+  nextRenewal   DateTime?     @map("next_renewal") @db.Date
+  isActive      Boolean       @default(true) @map("is_active")
+  ownerUserId   String?       @map("owner_user_id")
+  notes         String?
+  lastSyncedAt  DateTime?     @map("last_synced_at")
+  lastSyncError String?       @map("last_sync_error")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
 
   organization   Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
   vendor         Vendor?         @relation(fields: [vendorId], references: [id], onDelete: SetNull)
@@ -154,6 +160,7 @@ model Service {
 
   @@index([orgId, isActive])
   @@index([orgId, nextRenewal])
+  @@index([orgId, lastSyncedAt])
   @@index([vendorId])
   @@index([ownerUserId])
   @@map("services")

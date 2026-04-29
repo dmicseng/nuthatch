@@ -4,6 +4,7 @@ import { POST as signupRoute } from '@/app/api/auth/signup/route';
 import { COOKIE_NAME } from '@/lib/auth/session';
 import { createInviteToken } from '@/lib/auth/invite';
 import { resetDb, testPrisma, disconnect } from '../setup/db';
+import { createTestOrg } from '../setup/factories';
 
 function jsonRequest(body: unknown) {
   return new NextRequest('http://localhost/api/auth/signup', {
@@ -73,7 +74,7 @@ describe('POST /api/auth/signup', () => {
     const owner = await testPrisma.user.create({
       data: { email: 'owner@example.com', passwordHash: 'x', name: 'Owner' },
     });
-    const org = await testPrisma.organization.create({ data: { name: 'Acme' } });
+    const org = await createTestOrg('Acme');
     await testPrisma.membership.create({
       data: { orgId: org.id, userId: owner.id, role: 'owner' },
     });

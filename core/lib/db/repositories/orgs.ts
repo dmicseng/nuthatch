@@ -1,14 +1,35 @@
 import type { Membership, Organization, Prisma, Role } from '@prisma/client';
 import { prisma } from '@/lib/db/client';
+import { decryptDek, encryptDek, generateDek } from '@/lib/crypto/envelope';
 
 type Db = Prisma.TransactionClient | typeof prisma;
+
+/**
+ * Returns the org's plaintext DEK. The column is NOT NULL — every org has a
+ * DEK provisioned at creation time (createOrgWithOwner). Throws if the org
+ * is missing.
+ *
+ * Caller MUST treat the returned Buffer as sensitive — never log or persist.
+ */
+export async function loadOrgDek(orgId: string, db: Db = prisma): Promise<Buffer> {
+  const org = await db.organization.findUnique({
+    where: { id: orgId },
+    select: { dekEncrypted: true },
+  });
+  if (!org) throw new Error('not_found');
+  return decryptDek(Buffer.from(org.dekEncrypted));
+}
 
 export function createOrgWithOwner(
   input: { name: string; ownerUserId: string },
   db: Db = prisma,
 ): Promise<{ org: Organization; membership: Membership }> {
   return (async () => {
-    const org = await db.organization.create({ data: { name: input.name } });
+    const dek = generateDek();
+    const dekEncrypted = encryptDek(dek);
+    const org = await db.organization.create({
+      data: { name: input.name, dekEncrypted },
+    });
     const membership = await db.membership.create({
       data: { orgId: org.id, userId: input.ownerUserId, role: 'owner' },
     });
