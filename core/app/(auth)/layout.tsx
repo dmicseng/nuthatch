@@ -9,7 +9,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Nuthatch
           </span>
         </Link>
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-lg p-8 shadow-sm">
+        <div className="bg-[var(--surface)] border border-[var(--border-line)] rounded-lg p-8 shadow-sm">
           {children}
         </div>
       </div>

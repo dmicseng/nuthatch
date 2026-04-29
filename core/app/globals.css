@@ -1,6 +1,73 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-geist);
+  --font-serif: var(--font-instrument-serif);
+  --font-mono: var(--font-jetbrains-mono);
+}
 
 :root {
+  /* shadcn — brand-aligned HSL */
+  --background: 47 35% 93%;          /* cream */
+  --foreground: 48 14% 9%;
+  --card: 47 50% 97%;                /* lighter cream */
+  --card-foreground: 48 14% 9%;
+  --popover: 47 50% 97%;
+  --popover-foreground: 48 14% 9%;
+  --primary: 28 50% 45%;             /* ochre */
+  --primary-foreground: 47 35% 93%;
+  --secondary: 210 30% 24%;          /* slate */
+  --secondary-foreground: 47 35% 93%;
+  --muted: 42 25% 88%;
+  --muted-foreground: 48 10% 35%;
+  --accent: 42 30% 90%;
+  --accent-foreground: 48 14% 9%;
+  --destructive: 0 50% 48%;
+  --destructive-foreground: 47 35% 93%;
+  --border: 42 25% 80%;
+  --input: 42 25% 80%;
+  --ring: 28 50% 45%;
+  --radius: 0.5rem;
+
+  /* Chart palette — ochre primary, supporting hues for category breakdowns */
+  --chart-1: 28 50% 45%;             /* ochre */
+  --chart-2: 210 30% 35%;            /* slate */
+  --chart-3: 90 25% 35%;             /* moss */
+  --chart-4: 340 25% 45%;            /* dusty rose */
+  --chart-5: 200 30% 50%;            /* steel */
+
+  /* Legacy brand vars — used by app/landing.css and app/(auth) pages */
   --bg: #f5f0e6;
   --bg-alt: #ede6d6;
   --surface: #fbf8f1;
@@ -13,28 +80,60 @@
   --accent-warm: #a8743c;
   --accent-warm-hover: #95682f;
   --accent-warm-soft: #f0e3cf;
-  --border: #d9d0bf;
+  --border-line: #d9d0bf;
   --border-strong: #b8ae99;
   --warn: #8a6410;
   --error: #b54040;
 }
 
-@theme inline {
-  --color-background: var(--bg);
-  --color-surface: var(--surface);
-  --color-foreground: var(--text-1);
-  --color-muted: var(--text-2);
-  --color-accent: var(--accent-warm);
-  --color-accent-deep: var(--accent-deep);
-  --color-border: var(--border);
-  --color-error: var(--error);
-  --font-sans: var(--font-geist);
-  --font-serif: var(--font-instrument-serif);
-  --font-mono: var(--font-jetbrains-mono);
+.dark {
+  --background: 48 14% 9%;
+  --foreground: 47 35% 93%;
+  --card: 48 12% 12%;
+  --card-foreground: 47 35% 93%;
+  --popover: 48 12% 12%;
+  --popover-foreground: 47 35% 93%;
+  --primary: 28 55% 58%;
+  --primary-foreground: 48 14% 9%;
+  --secondary: 210 25% 70%;
+  --secondary-foreground: 48 14% 9%;
+  --muted: 48 8% 18%;
+  --muted-foreground: 48 10% 65%;
+  --accent: 48 8% 18%;
+  --accent-foreground: 47 35% 93%;
+  --destructive: 0 55% 60%;
+  --destructive-foreground: 48 14% 9%;
+  --border: 48 8% 22%;
+  --input: 48 8% 22%;
+  --ring: 28 55% 58%;
+
+  --chart-1: 28 55% 58%;
+  --chart-2: 210 35% 65%;
+  --chart-3: 90 25% 55%;
+  --chart-4: 340 30% 65%;
+  --chart-5: 200 35% 65%;
 }
 
 body {
-  background: var(--bg);
-  color: var(--text-1);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
   font-family: var(--font-geist), system-ui, sans-serif;
+}
+
+/* Tailwind v4 dropped pointer cursor on buttons by default — restore it */
+/* across all clickable affordances. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  [role="menuitem"]:not([data-disabled]),
+  [role="option"]:not([data-disabled]),
+  [role="combobox"]:not(:disabled),
+  [role="switch"]:not(:disabled),
+  [role="tab"]:not([data-disabled]),
+  [role="checkbox"]:not(:disabled),
+  [role="radio"]:not(:disabled),
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
 }

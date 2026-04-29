@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -32,9 +34,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geist.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {children}
+          <Toaster richColors closeButton />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

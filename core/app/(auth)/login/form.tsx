@@ -65,7 +65,7 @@ function Field(props: {
         id={name}
         name={name}
         {...rest}
-        className="w-full px-3 py-2 border border-[var(--border)] rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent-warm)] focus:border-transparent"
+        className="w-full px-3 py-2 border border-[var(--border-line)] rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent-warm)] focus:border-transparent"
       />
       {error ? <p className="mt-1 text-sm text-[var(--error)]">{error}</p> : null}
     </div>
