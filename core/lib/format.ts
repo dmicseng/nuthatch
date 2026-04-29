@@ -38,6 +38,31 @@ export function formatRelativeDate(date: Date | null | undefined): string {
   return RELATIVE_FORMATTER.format(days, 'day');
 }
 
+export function formatDelta(amount: MoneyInput, currency: string): string {
+  const n = typeof amount === 'number'
+    ? amount
+    : typeof amount === 'string'
+      ? Number(amount)
+      : amount.toNumber();
+  if (!Number.isFinite(n)) return '—';
+  const sign = n > 0 ? '+' : '';
+  return sign + formatMoney(n, currency);
+}
+
+export function formatPercent(n: number, fractionDigits = 0): string {
+  if (!Number.isFinite(n)) return '—';
+  const sign = n > 0 ? '+' : '';
+  return `${sign}${n.toFixed(fractionDigits)}%`;
+}
+
+export function formatMonthShort(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date);
+}
+
+export function formatMonthLong(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(date);
+}
+
 export function toDateInputValue(date: Date | null | undefined): string {
   if (!date) return '';
   const yyyy = date.getFullYear();

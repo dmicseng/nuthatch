@@ -297,6 +297,227 @@ export async function update(
   });
 }
 
+// =============================================================================
+// Dashboard aggregations
+// =============================================================================
+
+function monthRangeUtc(d: Date): { start: Date; end: Date } {
+  const start = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
+  const end = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1));
+  return { start, end };
+}
+
+function ymKey(d: Date): string {
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+export type MonthlySummary = {
+  thisMonthTotal: number;
+  thisMonthActual: number;
+  thisMonthProjected: number;
+  lastMonthTotal: number;
+  currency: string;
+  activeServicesCount: number;
+};
+
+export async function activeServicesCount(orgId: string, db: Db = prisma): Promise<number> {
+  return db.service.count({ where: { orgId, isActive: true } });
+}
+
+export async function monthlySummary(
+  orgId: string,
+  now: Date = new Date(),
+  db: Db = prisma,
+): Promise<MonthlySummary> {
+  const { start: thisStart, end: thisEnd } = monthRangeUtc(now);
+  const lastAnchor = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  const { start: lastStart, end: lastEnd } = monthRangeUtc(lastAnchor);
+
+  const [thisActualAgg, lastActualAgg, projections, count, sampleService, sampleEvent] =
+    await Promise.all([
+      db.billingEvent.aggregate({
+        where: { service: { orgId }, chargedOn: { gte: thisStart, lt: thisEnd } },
+        _sum: { amount: true },
+      }),
+      db.billingEvent.aggregate({
+        where: { service: { orgId }, chargedOn: { gte: lastStart, lt: lastEnd } },
+        _sum: { amount: true },
+      }),
+      db.service.findMany({
+        where: {
+          orgId,
+          isActive: true,
+          type: 'subscription',
+          nextRenewal: { gte: thisStart, lt: thisEnd },
+          billingEvents: { none: { chargedOn: { gte: thisStart, lt: thisEnd } } },
+        },
+        select: { fixedCost: true, currency: true },
+      }),
+      db.service.count({ where: { orgId, isActive: true } }),
+      db.service.findFirst({
+        where: { orgId, isActive: true },
+        select: { currency: true },
+      }),
+      db.billingEvent.findFirst({
+        where: { service: { orgId }, chargedOn: { gte: thisStart, lt: thisEnd } },
+        select: { currency: true },
+      }),
+    ]);
+
+  const thisActual = Number(thisActualAgg._sum.amount?.toString() ?? '0');
+  const lastTotal = Number(lastActualAgg._sum.amount?.toString() ?? '0');
+  const thisProjected = projections.reduce(
+    (sum, s) => sum + Number(s.fixedCost?.toString() ?? '0'),
+    0,
+  );
+  const currency = sampleEvent?.currency ?? sampleService?.currency ?? 'USD';
+
+  return {
+    thisMonthTotal: thisActual + thisProjected,
+    thisMonthActual: thisActual,
+    thisMonthProjected: thisProjected,
+    lastMonthTotal: lastTotal,
+    currency,
+    activeServicesCount: count,
+  };
+}
+
+export type CategoryBreakdownRow = { category: string; total: number };
+
+export async function categoryBreakdown(
+  orgId: string,
+  now: Date = new Date(),
+  db: Db = prisma,
+): Promise<CategoryBreakdownRow[]> {
+  const { start, end } = monthRangeUtc(now);
+
+  const actualRows = await db.$queryRaw<Array<{ category: string; total: string }>>`
+    SELECT COALESCE(v.category::text, 'other') as category,
+           COALESCE(SUM(b.amount), 0)::text as total
+    FROM billing_events b
+    JOIN services s ON s.id = b.service_id
+    LEFT JOIN vendors v ON v.id = s.vendor_id
+    WHERE s.org_id = ${orgId}
+      AND b.charged_on >= ${start}
+      AND b.charged_on < ${end}
+    GROUP BY 1
+  `;
+
+  const projectionRows = await db.$queryRaw<Array<{ category: string; total: string }>>`
+    SELECT COALESCE(v.category::text, 'other') as category,
+           COALESCE(SUM(s.fixed_cost), 0)::text as total
+    FROM services s
+    LEFT JOIN vendors v ON v.id = s.vendor_id
+    WHERE s.org_id = ${orgId}
+      AND s.is_active = true
+      AND s.type = 'subscription'
+      AND s.next_renewal >= ${start}
+      AND s.next_renewal < ${end}
+      AND NOT EXISTS (
+        SELECT 1 FROM billing_events b
+        WHERE b.service_id = s.id AND b.charged_on >= ${start} AND b.charged_on < ${end}
+      )
+    GROUP BY 1
+  `;
+
+  const map = new Map<string, number>();
+  for (const r of actualRows) map.set(r.category, (map.get(r.category) ?? 0) + Number(r.total));
+  for (const r of projectionRows)
+    map.set(r.category, (map.get(r.category) ?? 0) + Number(r.total));
+
+  return Array.from(map.entries())
+    .filter(([, total]) => total > 0)
+    .map(([category, total]) => ({ category, total }))
+    .sort((a, b) => b.total - a.total);
+}
+
+export type MonthlyTrendPoint = {
+  month: string;        // 'Jun'
+  monthFull: string;    // 'June 2026'
+  total: number;
+  serviceCount: number;
+  isCurrent: boolean;
+};
+
+export async function last6MonthsTotals(
+  orgId: string,
+  now: Date = new Date(),
+  db: Db = prisma,
+): Promise<MonthlyTrendPoint[]> {
+  const months: Array<{ start: Date; end: Date; label: string; full: string }> = [];
+  for (let i = 5; i >= 0; i--) {
+    const anchor = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+    const end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i + 1, 1));
+    months.push({
+      start: anchor,
+      end,
+      label: new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(
+        anchor,
+      ),
+      full: new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(anchor),
+    });
+  }
+
+  const earliest = months[0].start;
+  const currentMonth = months[months.length - 1];
+
+  const [actualRows, projections] = await Promise.all([
+    db.$queryRaw<Array<{ ym: string; total: string; service_count: bigint }>>`
+      SELECT to_char(date_trunc('month', b.charged_on), 'YYYY-MM') as ym,
+             COALESCE(SUM(b.amount), 0)::text as total,
+             COUNT(DISTINCT b.service_id) as service_count
+      FROM billing_events b
+      JOIN services s ON s.id = b.service_id
+      WHERE s.org_id = ${orgId}
+        AND b.charged_on >= ${earliest}
+      GROUP BY 1
+      ORDER BY 1 ASC
+    `,
+    db.service.findMany({
+      where: {
+        orgId,
+        isActive: true,
+        type: 'subscription',
+        nextRenewal: { gte: currentMonth.start, lt: currentMonth.end },
+        billingEvents: {
+          none: { chargedOn: { gte: currentMonth.start, lt: currentMonth.end } },
+        },
+      },
+      select: { fixedCost: true },
+    }),
+  ]);
+
+  const actualByMonth = new Map<string, { total: number; serviceCount: number }>();
+  for (const r of actualRows) {
+    actualByMonth.set(r.ym, {
+      total: Number(r.total),
+      serviceCount: Number(r.service_count),
+    });
+  }
+
+  const projectedTotal = projections.reduce(
+    (sum, s) => sum + Number(s.fixedCost?.toString() ?? '0'),
+    0,
+  );
+
+  return months.map((m, idx) => {
+    const isCurrent = idx === months.length - 1;
+    const key = ymKey(m.start);
+    const actual = actualByMonth.get(key);
+    return {
+      month: m.label,
+      monthFull: m.full,
+      total: (actual?.total ?? 0) + (isCurrent ? projectedTotal : 0),
+      serviceCount: (actual?.serviceCount ?? 0) + (isCurrent ? projections.length : 0),
+      isCurrent,
+    };
+  });
+}
+
 export async function deactivate(
   id: string,
   orgId: string,
