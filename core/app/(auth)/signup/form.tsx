@@ -91,7 +91,7 @@ function Field(props: {
         id={name}
         name={name}
         {...rest}
-        className="w-full px-3 py-2 border border-[var(--border)] rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent-warm)] focus:border-transparent disabled:bg-[var(--surface)] read-only:bg-[var(--surface)] read-only:cursor-not-allowed"
+        className="w-full px-3 py-2 border border-[var(--border-line)] rounded bg-white focus:outline-none focus:ring-2 focus:ring-[var(--accent-warm)] focus:border-transparent disabled:bg-[var(--surface)] read-only:bg-[var(--surface)] read-only:cursor-not-allowed"
       />
       {error ? (
         <p className="mt-1 text-sm text-[var(--error)]">{error}</p>

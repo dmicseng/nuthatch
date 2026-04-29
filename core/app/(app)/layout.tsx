@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/client';
 import { getSessionFromCookies } from '@/lib/auth/session';
-import { LogoutButton } from './logout-button';
+import { Sidebar } from '@/components/app/sidebar';
+import { TopNav } from '@/components/app/top-nav';
 
 export const runtime = 'nodejs';
 
-export default async function DashboardPage() {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getSessionFromCookies();
   if (!session) redirect('/login');
 
@@ -25,19 +26,16 @@ export default async function DashboardPage() {
   if (!user || !membership) redirect('/login');
 
   return (
-    <main className="min-h-screen p-8">
-      <div className="max-w-3xl mx-auto">
-        <header className="flex items-center justify-between mb-12">
-          <span className="font-serif italic text-3xl text-[var(--accent-deep)]">
-            Nuthatch
-          </span>
-          <LogoutButton />
-        </header>
-        <h1 className="text-2xl mb-2">Welcome, {user.name ?? user.email}</h1>
-        <p className="text-[var(--text-2)]">
-          Organization: <strong>{membership.organization.name}</strong> ({membership.role})
-        </p>
+    <div className="bg-background min-h-screen">
+      <Sidebar />
+      <div className="lg:pl-60">
+        <TopNav
+          orgName={membership.organization.name}
+          user={{ name: user.name, email: user.email }}
+          role={membership.role}
+        />
+        <main className="mx-auto w-full max-w-7xl p-4 lg:p-6">{children}</main>
       </div>
-    </main>
+    </div>
   );
 }

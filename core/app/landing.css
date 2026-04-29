@@ -1,6 +1,34 @@
 /* Landing page styles. Scope: only `app/page.tsx`. */
 
 .landing {
+  /* Landing is always light, regardless of app dark-mode toggle. */
+  /* Override shadcn HSL theme tokens to light values so any descendant */
+  /* utility (fill-background, bg-card, etc.) renders cream regardless of */
+  /* the .dark class on <html>. */
+  --background: 47 35% 93%;
+  --foreground: 48 14% 9%;
+  --card: 47 50% 97%;
+  --card-foreground: 48 14% 9%;
+  --popover: 47 50% 97%;
+  --popover-foreground: 48 14% 9%;
+  --primary: 28 50% 45%;
+  --primary-foreground: 47 35% 93%;
+  --secondary: 210 30% 24%;
+  --secondary-foreground: 47 35% 93%;
+  --muted: 42 25% 88%;
+  --muted-foreground: 48 10% 35%;
+  --accent: 42 30% 90%;
+  --accent-foreground: 48 14% 9%;
+  --destructive: 0 50% 48%;
+  --destructive-foreground: 47 35% 93%;
+  --border: 42 25% 80%;
+  --input: 42 25% 80%;
+  --ring: 28 50% 45%;
+
+  color-scheme: light;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text-1);
   font-family: var(--font-geist), -apple-system, BlinkMacSystemFont, sans-serif;
   background-image:
     radial-gradient(circle at 12% 8%, rgba(168, 116, 60, 0.04) 0%, transparent 40%),
@@ -10,7 +38,8 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.landing a { color: inherit; text-decoration: none; }
+.landing a { text-decoration: none; }
+.landing a:not(.btn):not(.nav-cta):not(.price-cta) { color: inherit; }
 .landing-container { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
 
 /* Nav */
@@ -21,7 +50,7 @@
   background: rgba(245, 240, 230, 0.88);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-line);
 }
 .nav-inner {
   display: flex;
@@ -68,7 +97,7 @@
   margin-bottom: 28px;
   padding: 6px 14px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-line);
   border-radius: 20px;
 }
 .eyebrow .dot {
@@ -214,7 +243,7 @@ section.block { padding: 96px 0; }
 .feature {
   padding: 32px 28px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-line);
   border-radius: 16px;
   transition: border-color 0.2s ease;
 }
@@ -244,7 +273,7 @@ section.block { padding: 96px 0; }
 /* Comparison */
 .compare-wrap {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-line);
   border-radius: 16px;
   overflow: hidden;
 }
@@ -259,7 +288,7 @@ section.block { padding: 96px 0; }
   letter-spacing: 0.08em;
 }
 .compare-wrap th.col-us { color: var(--accent-deep); }
-.compare-wrap tbody tr td { border-top: 1px solid var(--border); }
+.compare-wrap tbody tr td { border-top: 1px solid var(--border-line); }
 .compare-wrap td.cell { text-align: center; color: var(--text-2); font-family: var(--font-jetbrains-mono); font-size: 13px; }
 .compare-wrap td.yes { color: var(--accent-deep); font-weight: 500; }
 .compare-wrap td.us { color: var(--accent-warm); font-weight: 500; font-family: var(--font-geist); }
@@ -272,7 +301,7 @@ section.block { padding: 96px 0; }
 
 .price-card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-line);
   border-radius: 16px;
   padding: 32px 28px;
   position: relative;
@@ -349,7 +378,7 @@ section.block { padding: 96px 0; }
 /* Waitlist */
 .waitlist-card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-line);
   border-radius: 20px;
   padding: 52px 48px;
   max-width: 760px;
@@ -422,7 +451,7 @@ section.block { padding: 96px 0; }
 
 /* Footer */
 .landing-footer {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-line);
   padding: 40px 0;
   margin-top: 48px;
 }
