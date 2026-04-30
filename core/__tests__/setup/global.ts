@@ -21,13 +21,11 @@ export async function setup() {
     datasources: { db: { url: adminUrl() } },
   });
   try {
+    // Drop+recreate so schema-changing migrations (e.g. ALTER COLUMN ... NOT
+    // NULL) always run against a clean slate. Postgres 13+ FORCE closes any
+    // open connections so the drop succeeds even if a prior run left them open.
+    await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${dbName()}" WITH (FORCE)`);
     await admin.$executeRawUnsafe(`CREATE DATABASE "${dbName()}"`);
-  } catch (err) {
-    const msg = (err as Error).message ?? '';
-    if (!msg.includes('already exists')) {
-      await admin.$disconnect();
-      throw err;
-    }
   } finally {
     await admin.$disconnect();
   }

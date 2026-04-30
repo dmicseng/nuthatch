@@ -8,10 +8,11 @@ import {
   update,
 } from '@/lib/db/repositories/services';
 import { resetDb, testPrisma, disconnect } from '../setup/db';
+import { createTestOrg } from '../setup/factories';
 
 async function seedFixture() {
-  const orgA = await testPrisma.organization.create({ data: { name: 'Org A' } });
-  const orgB = await testPrisma.organization.create({ data: { name: 'Org B' } });
+  const orgA = await createTestOrg('Org A');
+  const orgB = await createTestOrg('Org B');
   const userA = await testPrisma.user.create({
     data: { email: 'a@a.com', passwordHash: 'x' },
   });

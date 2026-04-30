@@ -17,6 +17,7 @@ import { formatMoney, formatRelativeDate } from '@/lib/format';
 import { ServicesFilters } from './_components/services-filters';
 import { ServiceRowActions } from './_components/service-row-actions';
 import { ServicesEmptyState } from './_components/empty-state';
+import { IntegrationStatusBadge } from './_components/integration-status-badge';
 import { Pagination } from './_components/pagination';
 import { ToastOnMount } from './_components/toast-on-mount';
 
@@ -123,6 +124,7 @@ export default async function ServicesPage({
                   <TableHead className="text-right">Cost</TableHead>
                   <TableHead>Cycle</TableHead>
                   <TableHead>Next renewal</TableHead>
+                  <TableHead>Integration</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
@@ -171,6 +173,13 @@ export default async function ServicesPage({
                       </TableCell>
                       <TableCell className="text-sm">
                         {service.nextRenewal ? formatRelativeDate(service.nextRenewal) : '—'}
+                      </TableCell>
+                      <TableCell>
+                        <IntegrationStatusBadge
+                          serviceId={service.id}
+                          hasCredential={Boolean(service.credential)}
+                          hasError={Boolean(service.lastSyncError)}
+                        />
                       </TableCell>
                       <TableCell>
                         <ServiceRowActions

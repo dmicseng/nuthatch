@@ -14,9 +14,14 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:backfill-deks": "tsx scripts/backfill-deks.ts",
+    "worker": "tsx worker.ts",
+    "worker:dev": "tsx watch worker.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-cost-explorer": "^3.1039.0",
+    "@aws-sdk/client-sts": "^3.1039.0",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
@@ -24,6 +29,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "dotenv": "^17.4.2",
     "ioredis": "^5.4.2",
     "jose": "^5.9.6",
     "lucide-react": "^1.11.0",
@@ -48,6 +54,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/ui": "^2.1.8",
+    "aws-sdk-client-mock": "^4.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "jsdom": "^25.0.1",

@@ -26,6 +26,7 @@ export type ServiceListFilters = {
 export type ServiceWithRelations = Service & {
   vendor: Vendor | null;
   owner: { id: string; name: string | null; email: string } | null;
+  credential?: { id: string } | null;
 };
 
 export type ServiceListResult = {
@@ -97,6 +98,7 @@ export async function list(
       include: {
         vendor: true,
         owner: { select: { id: true, name: true, email: true } },
+        credential: { select: { id: true } },
       },
       orderBy: [{ isActive: 'desc' }, { createdAt: 'desc' }],
       skip,
