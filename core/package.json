@@ -14,7 +14,10 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:backfill-deks": "tsx scripts/backfill-deks.ts",
+    "worker": "tsx worker.ts",
+    "worker:dev": "tsx watch worker.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -24,6 +27,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "dotenv": "^17.4.2",
     "ioredis": "^5.4.2",
     "jose": "^5.9.6",
     "lucide-react": "^1.11.0",
