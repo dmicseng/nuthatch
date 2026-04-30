@@ -31,6 +31,22 @@ export type ValidateResult =
   | { ok: true; metadata?: Record<string, string> }
   | { ok: false; error: string };
 
+/**
+ * Optional UI-side credential setup walkthrough rendered inline above the
+ * Connect form. Plain data only so it serializes across the Server → Client
+ * boundary.
+ */
+export type SetupGuide = {
+  /** Single-paragraph "what you'll need" intro shown collapsed-by-default. */
+  summary: string;
+  /** Ordered action steps. Each item is one short sentence. */
+  steps: string[];
+  /** Optional code block — e.g. the minimum IAM policy JSON. */
+  policyJson?: string;
+  /** Link to the full doc with screenshots; opens in a new tab. */
+  docsUrl: string;
+};
+
 export type AdapterContext<TCreds = Record<string, unknown>> = {
   serviceId: string;
   orgId: string;
@@ -53,6 +69,8 @@ export interface VendorAdapter<TCreds = Record<string, unknown>> {
   displayName: string;
   /** Zod schema used to render the credential form and validate input. */
   credentialSchema: z.ZodType<TCreds>;
+  /** Optional inline credential setup walkthrough for the connect form. */
+  setupGuide?: SetupGuide;
   /**
    * Lightweight call to verify the credentials work before storing them.
    * Should NOT pull data — just confirm the API accepts the credentials and

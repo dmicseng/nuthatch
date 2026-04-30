@@ -180,6 +180,7 @@ model BillingEvent {
 
   @@index([serviceId, chargedOn(sort: Desc)])
   @@index([serviceId, createdAt(sort: Desc)])
+  @@unique([serviceId, externalRef], map: "billing_events_service_external_ref_unique")
   @@map("billing_events")
 }
 

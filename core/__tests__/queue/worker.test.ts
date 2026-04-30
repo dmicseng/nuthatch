@@ -180,15 +180,15 @@ describe('processSync', () => {
         externalRef: 'test-1',
       },
     });
-    // No unique constraint on externalRef in our schema; we rely on adapters
-    // to choose stable refs and on the runner to use createMany. Verify the
-    // second sync still succeeds (creates a duplicate row). This test
-    // documents current behavior; future work can add a unique constraint.
+    // The unique index on (service_id, external_ref) plus createMany's
+    // skipDuplicates keeps the pre-existing row and silently drops the
+    // adapter's duplicate. The pre-existing amount (99.99) survives.
     await processSync(mockJob(service.id, org.id));
     const events = await testPrisma.billingEvent.findMany({
-      where: { serviceId: service.id },
+      where: { serviceId: service.id, externalRef: 'test-1' },
     });
-    expect(events.length).toBeGreaterThanOrEqual(2);
+    expect(events).toHaveLength(1);
+    expect(events[0].amount.toString()).toBe('99.99');
   });
 
   it('recordSyncFailure stores error message and audits service.sync_failed', async () => {

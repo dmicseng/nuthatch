@@ -6,6 +6,9 @@
 import { env } from '@/lib/env';
 import { registerAdapter } from './registry';
 import { mockAdapter } from './mock';
+import { awsAdapter } from './aws';
+
+registerAdapter(awsAdapter);
 
 if (env.NODE_ENV !== 'production') {
   registerAdapter(mockAdapter);

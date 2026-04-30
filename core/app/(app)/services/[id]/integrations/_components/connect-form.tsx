@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { ChevronDown, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { CredentialFieldMeta } from '@/lib/adapters/introspect';
+import type { SetupGuide } from '@/lib/adapters/types';
 
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_credentials: 'Vendor rejected these credentials.',
@@ -24,14 +26,52 @@ function camelToTitle(s: string): string {
     .trim();
 }
 
+function SetupGuideSection({ guide }: { guide: SetupGuide }) {
+  return (
+    <details className="group border-border bg-accent/40 mb-6 rounded-md border p-4 [&_summary::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer items-center justify-between text-sm font-medium select-none">
+        <span>How do I get these credentials?</span>
+        <ChevronDown
+          className="text-muted-foreground size-4 transition-transform group-open:rotate-180"
+          aria-hidden
+        />
+      </summary>
+      <div className="mt-4 space-y-3 text-sm">
+        <p className="text-muted-foreground">{guide.summary}</p>
+        <ol className="ml-5 list-decimal space-y-1.5">
+          {guide.steps.map((step, i) => (
+            <li key={i}>{step}</li>
+          ))}
+        </ol>
+        {guide.policyJson ? (
+          <pre className="bg-background overflow-x-auto rounded border p-3 font-mono text-xs leading-relaxed">
+            <code>{guide.policyJson}</code>
+          </pre>
+        ) : null}
+        <a
+          href={guide.docsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
+        >
+          Full guide with screenshots
+          <ExternalLink className="size-3.5" aria-hidden />
+        </a>
+      </div>
+    </details>
+  );
+}
+
 export function ConnectForm({
   serviceId,
   adapterDisplayName,
   fields,
+  setupGuide,
 }: {
   serviceId: string;
   adapterDisplayName: string;
   fields: CredentialFieldMeta[];
+  setupGuide?: SetupGuide | null;
 }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -46,6 +86,7 @@ export function ConnectForm({
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {setupGuide ? <SetupGuideSection guide={setupGuide} /> : null}
         <form
           noValidate
           className="space-y-4"

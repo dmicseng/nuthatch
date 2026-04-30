@@ -60,6 +60,7 @@ export default async function IntegrationsPage({
           serviceId={id}
           adapterDisplayName={adapter.displayName}
           fields={introspectCredentialSchema(adapter.credentialSchema)}
+          setupGuide={adapter.setupGuide ?? null}
         />
       )}
     </div>

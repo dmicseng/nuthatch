@@ -20,6 +20,8 @@
     "worker:dev": "tsx watch worker.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-cost-explorer": "^3.1039.0",
+    "@aws-sdk/client-sts": "^3.1039.0",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
@@ -52,6 +54,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/ui": "^2.1.8",
+    "aws-sdk-client-mock": "^4.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "jsdom": "^25.0.1",
